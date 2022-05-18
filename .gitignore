@@ -4,6 +4,7 @@
 !readme.md
 !.gitkeep
 !*.cs
+!*.csproj
 !*/
 obj/
 bin/
