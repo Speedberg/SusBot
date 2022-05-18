@@ -1,0 +1,28 @@
+name: sus
+
+on: 
+  workflow_dispatch:
+    inputs:
+      amogi:
+        description: 'I have no idea what i am doing'
+        required: false
+  schedule:
+    - cron: '11 1,5,9,13,17,21 * * *'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Run
+      run: dotnet run
