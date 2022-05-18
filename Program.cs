@@ -40,6 +40,7 @@ namespace TestBot
 
         private static async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs eventArgs)
         {
+            if(eventArgs.Author.IsBot) return;
             if(eventArgs.Message.Content.ToLower().Contains("egg") && !eventArgs.Message.Author.IsBot)
             {
                 await eventArgs.Message.CreateReactionAsync(DiscordEmoji.FromName(DiscordClient,":egg:",false));
