@@ -21,4 +21,4 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Run
-      run: dotnet run
+      run: dotnet run ${{ secrets.TOKEN }}
