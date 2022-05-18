@@ -3,11 +3,9 @@ name: sus
 on: 
   workflow_dispatch:
     inputs:
-      amogi:
+      what:
         description: 'I have no idea what i am doing'
         required: false
-  schedule:
-    - cron: '11 1,5,9,13,17,21 * * *'
 
 jobs:
   build:
@@ -22,7 +20,5 @@ jobs:
         dotnet-version: 5.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
     - name: Run
       run: dotnet run
