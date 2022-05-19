@@ -7,7 +7,7 @@ on:
         description: 'I have no idea what i am doing'
         required: false
   schedule:
-    - cron: '37 1,5,9,13,17,21 * * *'
+    - cron: '37 1,6,11,16,21 * * *'
 
 jobs:
   build:
