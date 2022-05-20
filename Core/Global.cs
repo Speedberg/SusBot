@@ -1,8 +1,33 @@
 using DSharpPlus.Entities;
+using System.Threading;
 
-namespace Speedberg.Bots
+namespace Speedberg.Bots.Core
 {
+    public enum ClientType
+    {
+        Discord,
+        Revolt
+    }
+
     public static class Global
+    {
+        public static CancellationTokenSource Cts;
+        
+        public static System.DateTimeOffset StartTime;
+        public static string UptimeDiscord
+        {
+            get
+            {
+                return $"<t:{Global.StartTime.ToUnixTimeSeconds().ToString()}:R>";
+            }
+        }
+
+        public static string Website = "https://speedberg.github.io/";
+        public static string WebsiteBots = "https://speedberg.github.io/";
+        public static string DiscordBotInvite = "https://speedberg.github.io/a/nitro/";
+    }
+
+    public static class DiscordGlobal
     {
         public static readonly ulong OwnerID = 579729416314421268;
         public static readonly ulong BotID = 734735424571965451;
@@ -17,5 +42,7 @@ namespace Speedberg.Bots
         public static DiscordMessage StateMessage = null;
 
         public static State BotState;
+
+        public static Discord.Client Client;
     }
 }

@@ -1,9 +1,9 @@
-namespace Speedberg.Bots
+namespace Speedberg.Bots.Core
 {
     public class State
     {
         public string uuid;
-        public System.DateTime startedAt;
+        public System.DateTimeOffset startedAt;
         public int instanceID;
     }
 }
