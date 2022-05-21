@@ -28,7 +28,8 @@ namespace TestBot
             {
                 Console.WriteLine("[ERROR]: {0}", e);
             }
-
+            
+            DiscordGlobal.Client.Dispose().GetAwaiter().GetResult();
             Console.WriteLine("Exiting.");
             System.Environment.Exit(0);
         }
