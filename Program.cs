@@ -36,7 +36,7 @@ namespace TestBot
         private static async Task MainAsync(string token)
         {
             DiscordGlobal.Client = new Speedberg.Bots.Core.Discord.Client();
-            await DiscordGlobal.Client.Setup(token, "!", new DSharpPlus.Entities.DiscordActivity("Debug Mode"),
+            await DiscordGlobal.Client.Setup(token, "!", new DSharpPlus.Entities.DiscordActivity("egg"),
             new Speedberg.Bots.Ping(),
             new Speedberg.Bots.SecretAmogus(),
             new Speedberg.Bots.Status(),
