@@ -9,6 +9,7 @@ namespace Speedberg.Bots
 
     public class Markov : Command
     {
+        //TODO - make this multi-threaded - give option to cache data to file on server? (NO - GDPR :(((((((()))))))))
         private static Dictionary<string, List<string>> bigrams = new Dictionary<string,List<string>>();
 
         [Command("markov",ClientType.Discord)]

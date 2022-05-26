@@ -36,10 +36,12 @@ namespace Speedberg.Bots.Core
         /// Server ID of the server which contains the state channel.
         /// </summary>
         public static readonly ulong StateServerID = 709850883336175669;
-        public static readonly ulong StateChannelID = 976940974246875207;
+        public static readonly ulong StartupChannelID = 976940974246875207;
+        public static readonly ulong ShutdownChannelID = 979439267031973948;
         public static DiscordGuild CachedStateGuild = null;
-        public static DiscordChannel CachedStateChannel = null;
-        public static DiscordMessage StateMessage = null;
+        public static DiscordChannel CachedStartupChannel = null;
+        public static DiscordChannel CachedShutdownChannel = null;
+        public static ulong LastStartupMessageID = 0;
 
         public static State BotState;
 

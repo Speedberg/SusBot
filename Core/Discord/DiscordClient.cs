@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -8,12 +9,18 @@ using System.Net.Http;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Speedberg.Bots.Core.Discord
 {
     public class Client : BotClient
     {
         public DiscordClient DiscordClient;
+        public Dictionary<ulong, Command> SlashCommands
+        {
+            get;
+            private set;
+        }
 
         public Client()
         {
@@ -28,19 +35,41 @@ namespace Speedberg.Bots.Core.Discord
                 {
                     Token = token,
                     TokenType = DSharpPlus.TokenType.Bot,
-                    Intents = DiscordIntents.AllUnprivileged     
+                    Intents = DiscordIntents.AllUnprivileged
                 });
 
                 this._token = token;
                 this._prefix = prefix;
                 this._commands = commands;
+                this.SlashCommands = new Dictionary<ulong, Command>();
                 
                 DiscordClient.MessageCreated += OnMessageCreated;
+                DiscordClient.InteractionCreated += OnInteractionCreated;
 
                 await DiscordClient.ConnectAsync(activity: activity);
 
+                //TODO: this half work
+                DiscordClient.Resumed += async (client, args) =>
+                {
+                    args.Handled = true;
+                    Console.WriteLine("Session outage detected - checking for state changes...");
+
+                    DiscordGlobal.CachedStartupChannel = await DiscordClient.GetChannelAsync(DiscordGlobal.StartupChannelID);
+
+                    if(DiscordGlobal.CachedStartupChannel.LastMessageId == null) return;
+
+                    //Change detcted since
+                    if(DiscordGlobal.CachedStartupChannel.LastMessageId != DiscordGlobal.LastStartupMessageID)
+                    {
+                        DiscordMessage message = await DiscordGlobal.CachedStartupChannel.GetMessageAsync((ulong)DiscordGlobal.CachedStartupChannel.LastMessageId);
+                        DiscordGlobal.LastStartupMessageID = (ulong)DiscordGlobal.CachedStartupChannel.LastMessageId;
+                        await DetectStateChange(DiscordGlobal.CachedStartupChannel, message);
+                    }
+                };
+
                 DiscordClient.Ready += async (client, args) =>
                 {
+                    Console.WriteLine("[DISCORD] Client created successfully | Version: {0} Guilds: {1}",DiscordClient.GatewayVersion,DiscordClient.Guilds.Count);
                     DiscordGlobal.CachedStateGuild = await DiscordClient.GetGuildAsync(DiscordGlobal.StateServerID);
                     if(DiscordGlobal.CachedStateGuild == null)
                     {
@@ -48,21 +77,28 @@ namespace Speedberg.Bots.Core.Discord
                         return;
                     }
 
-                    DiscordGlobal.CachedStateChannel = await DiscordClient.GetChannelAsync(DiscordGlobal.StateChannelID);
-                    if(DiscordGlobal.CachedStateChannel == null || DiscordGlobal.CachedStateChannel.GuildId != DiscordGlobal.StateServerID)
+                    DiscordGlobal.CachedStartupChannel = await DiscordClient.GetChannelAsync(DiscordGlobal.StartupChannelID);
+                    if(DiscordGlobal.CachedStartupChannel == null || DiscordGlobal.CachedStartupChannel.GuildId != DiscordGlobal.StateServerID)
                     {
-                        Console.WriteLine("[ERROR] Could not find State Channel.");
+                        Console.WriteLine("[ERROR] Could not find Startup Channel.");
+                        return;
+                    }
+
+                    DiscordGlobal.CachedShutdownChannel = await DiscordClient.GetChannelAsync(DiscordGlobal.ShutdownChannelID);
+                    if(DiscordGlobal.CachedShutdownChannel == null || DiscordGlobal.CachedShutdownChannel.GuildId != DiscordGlobal.StateServerID)
+                    {
+                        Console.WriteLine("[ERROR] Could not find Shutdown Channel.");
                         return;
                     }
 
                     //Download current state
-                    State currentState = await FetchState(DiscordGlobal.CachedStateChannel.LastMessageId);
+                    State currentState = await FetchState(true,DiscordGlobal.CachedStartupChannel.LastMessageId);
 
                     if(currentState == null)
                     {
                         Console.WriteLine("Creating new state...");
                         currentState = new State();
-                        currentState.startedAt = Global.StartTime;
+                        currentState.firstTimestamp = Global.StartTime;
                         currentState.instanceID = -1;
                     }
 
@@ -70,10 +106,16 @@ namespace Speedberg.Bots.Core.Discord
                     currentState.instanceID += 1;
                     currentState.uuid = Guid.NewGuid().ToString();
                     DiscordGlobal.BotState = currentState;
+                    currentState.instanceStartTime = Global.StartTime;
                     Console.WriteLine("Bot UUID: {0} Instance: {1}", currentState.uuid,currentState.instanceID);
 
                     //Upload new state
-                    await SaveState("Startup");
+                    await SaveState(true);
+
+                    //Build slash commands
+                    SlashCommands = await Commands.CommandExecutor.BuildSlashCommands(DiscordClient,commands);
+
+                    await DiscordClient.UpdateStatusAsync(new DiscordActivity("egg"), idleSince: Global.StartTime);
                 };
 
                 return true;
@@ -132,12 +174,30 @@ namespace Speedberg.Bots.Core.Discord
             await CheckForCommand(eventArgs.Message,eventArgs.Guild,eventArgs.Channel);
         }
 
+        private async Task OnInteractionCreated(DiscordClient client, InteractionCreateEventArgs eventArgs)
+        {
+            if(eventArgs.Interaction.Type == InteractionType.ApplicationCommand)
+            {
+                if(SlashCommands.ContainsKey(eventArgs.Interaction.ApplicationId))
+                {
+                    await Commands.CommandExecutor.ExecuteSlashAsync(SlashCommands[eventArgs.Interaction.ApplicationId], eventArgs.Interaction);
+                    await Commands.CommandExecutor.ExecuteSlashAsync(SlashCommands[eventArgs.Interaction.ApplicationId], eventArgs.Interaction,eventArgs.Interaction.Data.Options.ToArray());
+                } else {
+                    await eventArgs.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                    {
+                        Content = "Error: idiot",
+                    });
+                }
+                eventArgs.Handled = true;
+            }
+        }
+
         private async Task DetectStateChange(DiscordChannel channel, DiscordMessage message)
         {
             if(channel.GuildId != DiscordGlobal.StateServerID) return;
-            if(channel.Id != DiscordGlobal.StateChannelID) return;
+            if(channel.Id != DiscordGlobal.StartupChannelID && channel.Id != DiscordGlobal.ShutdownChannelID) return;
 
-            State fileState = await FetchState(message.Id);
+            State fileState = await FetchState((channel.Id == DiscordGlobal.StartupChannelID),message.Id);
 
             if(fileState == null) return;
             if(fileState.uuid == DiscordGlobal.BotState.uuid) return;
@@ -145,12 +205,13 @@ namespace Speedberg.Bots.Core.Discord
             //New instance detected - dispose this client gracefully
             if(fileState.instanceID > DiscordGlobal.BotState.instanceID)
             {
+                Console.WriteLine("New instance detected!");
                 Console.WriteLine("death");
 
                 Global.Cts.Cancel();
-            } else
+            } else if(fileState.instanceID != DiscordGlobal.BotState.instanceID)
             {
-                //Old state values - copy these
+                //Apply this bot's instance and UUID to old changes
                 fileState.uuid = DiscordGlobal.BotState.uuid;
                 fileState.instanceID = DiscordGlobal.BotState.instanceID;
 
@@ -159,7 +220,7 @@ namespace Speedberg.Bots.Core.Discord
             }
         }
 
-        private async Task SaveState(string type)
+        private async Task SaveState(bool startup)
         {
             try
             {
@@ -170,10 +231,10 @@ namespace Speedberg.Bots.Core.Discord
 
                 using(MemoryStream memoryStream = new MemoryStream(byteArray))
                 {
-                    builder.WithContent(type);
+                    builder.WithContent(startup ? $"Startup: Instance {DiscordGlobal.BotState.instanceID}" : $"Shutdown: Instance {DiscordGlobal.BotState.instanceID}");
                     builder.WithFile("State.json", memoryStream);
                     Console.WriteLine("Saving state!");
-                    await DiscordClient.SendMessageAsync(DiscordGlobal.CachedStateChannel, builder);
+                    await DiscordClient.SendMessageAsync(startup ? DiscordGlobal.CachedStartupChannel : DiscordGlobal.CachedShutdownChannel, builder);
                 }
             } catch(Exception e)
             {
@@ -181,26 +242,37 @@ namespace Speedberg.Bots.Core.Discord
             }
         }
 
-        private async Task<State> FetchState(ulong? messageID)
+        private async Task<State> FetchState(bool startup, ulong? messageID)
         {
             byte[] data = null;
 
-            if (messageID == null) return null;
+            if (messageID == null)
+            {
+                Console.WriteLine("[ERROR] Message ID did not exist!");
+                return null;
+            }
 
             try
             {
-                DiscordMessage lastState = await DiscordGlobal.CachedStateChannel.GetMessageAsync((ulong)messageID);
+                Console.WriteLine("Fetching state!");
+                DiscordMessage lastState = null;
+                if (startup)
+                {
+                    lastState = await DiscordGlobal.CachedStartupChannel.GetMessageAsync((ulong)messageID);
+                    DiscordGlobal.LastStartupMessageID = lastState.Id;
+                } else {
+                    lastState = await DiscordGlobal.CachedShutdownChannel.GetMessageAsync((ulong)messageID);
+                }
                 DiscordAttachment file = lastState.Attachments[0];
                 HttpClient _client = new HttpClient();
 
                 data = await _client.GetByteArrayAsync(file.Url);
                 string json = System.Text.Encoding.Default.GetString(data);
-                Console.WriteLine("JSON: {0}", json);
-
                 return JsonConvert.DeserializeObject<State>(json);
             } catch (System.Exception e)
             {
                 //The message was probably deleted
+                Console.WriteLine("SUSUS " + e);
                 return null;
             }
         }
@@ -208,7 +280,7 @@ namespace Speedberg.Bots.Core.Discord
         public async Task Dispose()
         {
             //Save state on shutdown
-            await SaveState("Shutdown");
+            await SaveState(false);
             Console.WriteLine("Disconnecting and disposing...");
             DiscordClient.Dispose();
         }

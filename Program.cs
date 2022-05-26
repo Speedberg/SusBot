@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Speedberg.Bots.Core;
@@ -29,6 +29,8 @@ namespace TestBot
                 Console.WriteLine("[ERROR]: {0}", e);
             }
 
+            DiscordGlobal.Client.Dispose().GetAwaiter().GetResult();
+            Console.WriteLine($"Shutodwn successful: runtime - {(System.DateTimeOffset.Now - Global.StartTime).ToString()}");
             Console.WriteLine("Exiting.");
             System.Environment.Exit(0);
         }
@@ -36,8 +38,9 @@ namespace TestBot
         private static async Task MainAsync(string token)
         {
             DiscordGlobal.Client = new Speedberg.Bots.Core.Discord.Client();
-            await DiscordGlobal.Client.Setup(token, "!", new DSharpPlus.Entities.DiscordActivity("Debug Mode"),
+            await DiscordGlobal.Client.Setup(token, "!", new DSharpPlus.Entities.DiscordActivity("Restarting..."),
             new Speedberg.Bots.Ping(),
+            new Speedberg.Bots.Shutdown(),
             new Speedberg.Bots.SecretAmogus(),
             new Speedberg.Bots.Status(),
             new Speedberg.Bots.Help(),

@@ -7,6 +7,7 @@ namespace Speedberg.Bots.Core.Commands
 {
     public static class CommandExecutor
     {
+
         public static List<CommandHelp> FetchCommandHelp(ClientType clientType, params Command[] commands)
         {
             List<CommandHelp> helpCommands = new List<CommandHelp>();
@@ -141,6 +142,81 @@ namespace Speedberg.Bots.Core.Commands
                 await members[i].InvokeAsync(command,parameters);
                 return;
             }
+        }
+
+        public static async Task ExecuteSlashAsync(Command command, params object[] parameters)
+        {
+            MethodInfo[] members = (command.GetType()).GetMethods();
+            for (int i = 0; i < members.Length; i++)
+            {
+                var attribute = (Commands.SlashCommandAttribute)Attribute.GetCustomAttribute(members[i],typeof(Commands.SlashCommandAttribute));
+                if (attribute == null) continue;
+                ParameterInfo[] parameterInfos = members[i].GetParameters();
+                
+                if(parameterInfos.Length != parameters.Length) continue;
+
+                bool matches = true;
+                for(int p = 0; p < parameterInfos.Length; p++)
+                {
+                    if(parameterInfos[p].ParameterType != parameters[p].GetType()) matches = false;
+                }
+
+                if(!matches) return;
+
+                await members[i].InvokeAsync(command,parameters);
+                return;
+            }
+        }
+
+        public static async Task<Dictionary<ulong,Command>> BuildSlashCommands(DSharpPlus.DiscordClient client, params Command[] commands)
+        {
+            Dictionary<ulong,Command> slashCommands = new Dictionary<ulong,Command>();
+
+            if(commands == null || commands.Length <= 0) return null;
+
+            for(int i = 0; i < commands.Length; i++)
+            {
+                MethodInfo[] methods = (commands[i].GetType()).GetMethods();
+
+                for (int m = 0; m < methods.Length; m++)
+                {
+                    //Gets the SlashCommandAttribute attached to the method
+                    var commandAttribute = (SlashCommandAttribute)Attribute.GetCustomAttribute(methods[m],typeof(SlashCommandAttribute));
+                    if(commandAttribute == null) continue;
+
+                    DSharpPlus.Entities.DiscordApplicationCommandOption[] options = null;
+
+                    var parameterAttributes = (SlashCommandOption[])Attribute.GetCustomAttributes(methods[m],typeof(SlashCommandOption));
+                    if(parameterAttributes != null && parameterAttributes.Length > 0)
+                    {
+                        options = new DSharpPlus.Entities.DiscordApplicationCommandOption[parameterAttributes.Length];
+
+                        for(int p = 0; p < parameterAttributes.Length; p++)
+                        {
+                            options[p] = parameterAttributes[p].Option;
+                        }
+                    }
+
+                    DSharpPlus.Entities.DiscordApplicationCommand command = new DSharpPlus.Entities.DiscordApplicationCommand
+                    (
+                        commandAttribute.Name,
+                        commandAttribute.Description,
+                        options,
+                        true,
+                        DSharpPlus.ApplicationCommandType.SlashCommand
+                    );
+
+                    try
+                    {
+                        DSharpPlus.Entities.DiscordApplicationCommand response = await client.CreateGlobalApplicationCommandAsync(command);
+                        slashCommands.Add(response.ApplicationId,commands[i]);
+                    } catch(System.Exception e)
+                    {
+                        //I don't care
+                    }
+                }
+            }
+            return slashCommands;
         }
 
         public static async Task<object> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
