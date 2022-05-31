@@ -42,6 +42,7 @@ namespace Speedberg.Bots
 
                     foreach(var msg in messages)
                     {
+                        if(message.Author.IsBot) continue;
                         var sussyWords = msg.Content.Split(' ');
                         var filteredWords = new List<string>();
                         foreach(var sussyWord in sussyWords)

@@ -44,7 +44,8 @@ namespace TestBot
             new Speedberg.Bots.SecretAmogus(),
             new Speedberg.Bots.Status(),
             new Speedberg.Bots.Help(),
-            new Speedberg.Bots.Markov());
+            new Speedberg.Bots.Markov(),
+            new Speedberg.Bots.Eject());
 
             while(!Global.Cts.IsCancellationRequested)
             {
