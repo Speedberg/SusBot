@@ -115,7 +115,7 @@ namespace Speedberg.Bots.Core.Discord
                     //Build slash commands
                     SlashCommands = await Commands.CommandExecutor.BuildSlashCommands(DiscordClient,commands);
 
-                    await DiscordClient.UpdateStatusAsync(new DiscordActivity("egg"), idleSince: Global.StartTime);
+                    await DiscordClient.UpdateStatusAsync(new DiscordActivity("egg"));
                 };
 
                 return true;
@@ -156,6 +156,8 @@ namespace Speedberg.Bots.Core.Discord
 
         private async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs eventArgs)
         {
+            eventArgs.Handled = true;
+
             if(eventArgs.Author.IsBot && eventArgs.Author.Id == DiscordGlobal.BotID)
             {
                 await DetectStateChange(eventArgs.Channel, eventArgs.Message);
@@ -165,10 +167,18 @@ namespace Speedberg.Bots.Core.Discord
             if(eventArgs.Message.Content.ToLower().Contains("egg") && !eventArgs.Author.IsBot)
             {
                 await eventArgs.Message.CreateReactionAsync(DiscordEmoji.FromName(DiscordClient,":egg:",false));
-            }
-            if((System.DateTime.Now.ToBinary() % 77) == 0)
-            {
-                await eventArgs.Channel.SendMessageAsync(DiscordEmoji.FromName(DiscordClient,":egg:"));
+                DiscordGlobal.BotState.eggCount += 1;
+                try
+                {
+                    await client.UpdateStatusAsync(new DiscordActivity($"{DiscordGlobal.BotState.eggCount} {DiscordEmoji.FromName(DiscordClient,":egg:",false)}"));
+                } catch(System.Exception impostor)
+                {
+                    //eject
+                }
+                if((System.DateTime.Now.ToBinary() % 77) == 0)
+                {
+                    await eventArgs.Channel.SendMessageAsync(DiscordEmoji.FromName(DiscordClient,":egg:"));
+                }
             }
 
             await CheckForCommand(eventArgs.Message,eventArgs.Guild,eventArgs.Channel);
@@ -244,6 +254,7 @@ namespace Speedberg.Bots.Core.Discord
 
         private async Task<State> FetchState(bool startup, ulong? messageID)
         {
+            return null;
             byte[] data = null;
 
             if (messageID == null)

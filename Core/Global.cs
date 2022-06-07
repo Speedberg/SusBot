@@ -14,6 +14,13 @@ namespace Speedberg.Bots.Core
         public static CancellationTokenSource Cts;
         
         public static System.DateTimeOffset StartTime;
+        public static string UptimeGlobalDiscord
+        {
+            get
+            {
+                return $"<t:{DiscordGlobal.BotState.firstTimestamp.ToUnixTimeSeconds().ToString()}:R>";
+            }
+        }
         public static string UptimeDiscord
         {
             get

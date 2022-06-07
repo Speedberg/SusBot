@@ -30,7 +30,8 @@ namespace Speedberg.Bots
             if(keywords.Length == 1)
             {
                 embed.WithDescription("Displaying the status for this bot.");
-                embed.AddField("Uptime",Global.UptimeDiscord,true);
+                embed.AddField("Total time this bot has been in service",Global.UptimeGlobalDiscord,true);
+                embed.AddField("Instance Uptime",Global.UptimeDiscord,true);
                 embed.AddField("Ping", DiscordGlobal.Client.DiscordClient.Ping.ToString(), true);
                 embed.AddField("Instance", DiscordGlobal.BotState.instanceID.ToString());
             }

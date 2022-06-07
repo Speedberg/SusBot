@@ -11,6 +11,10 @@ namespace Speedberg.Bots
         [Command("shutdown",ClientType.Discord)]
         public async Task DiscordCommand(DiscordMessage message)
         {
+            if(message.Author.Id != DiscordGlobal.OwnerID)
+            {
+                return;
+            }
             await message.RespondAsync("Attempting shutdown...");
             try
             {

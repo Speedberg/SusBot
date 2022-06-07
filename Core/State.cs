@@ -6,5 +6,7 @@ namespace Speedberg.Bots.Core
         public System.DateTimeOffset firstTimestamp;
         public System.DateTimeOffset instanceStartTime;
         public int instanceID;
+
+        public ulong eggCount;
     }
 }
