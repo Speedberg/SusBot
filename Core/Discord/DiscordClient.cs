@@ -166,7 +166,7 @@ namespace Speedberg.Bots.Core.Discord
             {
                 await eventArgs.Message.CreateReactionAsync(DiscordEmoji.FromName(DiscordClient,":egg:",false));
             }
-            if((System.DateTime.Now.ToBinary() % 7) == 0)
+            if((System.DateTime.Now.ToBinary() % 77) == 0)
             {
                 await eventArgs.Channel.SendMessageAsync(DiscordEmoji.FromName(DiscordClient,":egg:"));
             }
