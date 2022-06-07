@@ -227,6 +227,13 @@ namespace Speedberg.Bots.Core.Discord
 
                 DiscordGlobal.BotState = fileState;
                 Console.WriteLine("Loaded old state!");
+                try
+                {
+                    await DiscordClient.UpdateStatusAsync(new DiscordActivity($"{DiscordGlobal.BotState.eggCount} {DiscordEmoji.FromName(DiscordClient,":egg:",false)}"));
+                } catch (System.Exception b)
+                {
+                    //death
+                }
             }
         }
 
