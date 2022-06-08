@@ -261,7 +261,6 @@ namespace Speedberg.Bots.Core.Discord
 
         private async Task<State> FetchState(bool startup, ulong? messageID)
         {
-            return null;
             byte[] data = null;
 
             if (messageID == null)
@@ -290,7 +289,7 @@ namespace Speedberg.Bots.Core.Discord
             } catch (System.Exception e)
             {
                 //The message was probably deleted
-                Console.WriteLine("SUSUS " + e);
+                Console.WriteLine("[ERROR] " + e);
                 return null;
             }
         }
