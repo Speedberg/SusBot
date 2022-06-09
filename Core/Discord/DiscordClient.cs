@@ -224,6 +224,7 @@ namespace Speedberg.Bots.Core.Discord
                 //Apply this bot's instance and UUID to old changes
                 fileState.uuid = DiscordGlobal.BotState.uuid;
                 fileState.instanceID = DiscordGlobal.BotState.instanceID;
+                Console.WriteLine("Eggs detected from old state: {0}", fileState.eggCount);
 
                 DiscordGlobal.BotState = fileState;
                 Console.WriteLine("Loaded old state!");
@@ -271,9 +272,9 @@ namespace Speedberg.Bots.Core.Discord
 
             try
             {
-                Console.WriteLine("Fetching state!");
+                Console.WriteLine("Fetching state! Startup? {0}",startup);
                 DiscordMessage lastState = null;
-                if (startup)
+                if(startup)
                 {
                     lastState = await DiscordGlobal.CachedStartupChannel.GetMessageAsync((ulong)messageID);
                     DiscordGlobal.LastStartupMessageID = lastState.Id;
