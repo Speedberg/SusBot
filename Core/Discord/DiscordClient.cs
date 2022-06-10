@@ -219,7 +219,9 @@ namespace Speedberg.Bots.Core.Discord
                 Console.WriteLine("death");
 
                 Global.Cts.Cancel();
-            } else if(fileState.instanceID != DiscordGlobal.BotState.instanceID)
+            }
+            //Only load new data if from shutdown - startup should only be used to detect a new client
+            else if(fileState.instanceID != DiscordGlobal.BotState.instanceID && channel.Id == DiscordGlobal.ShutdownChannelID)
             {
                 //Apply this bot's instance and UUID to old changes
                 fileState.uuid = DiscordGlobal.BotState.uuid;
