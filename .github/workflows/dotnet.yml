@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       what:
-        description: 'it's morbin time'
+        description: 'its morbin time'
         required: true
   schedule:
     - cron: '0 0,4,8,12,16,20 * * *'
