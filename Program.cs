@@ -18,7 +18,7 @@ namespace TestBot
             }
 
             //Cancels after 6 hours
-            Global.Cts = new CancellationTokenSource(21600000);
+            Global.Cts = new CancellationTokenSource(21240000);
             Global.StartTime = System.DateTimeOffset.Now;
 
             try
