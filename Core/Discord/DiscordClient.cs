@@ -158,6 +158,44 @@ namespace Speedberg.Bots.Core.Discord
         {
             eventArgs.Handled = true;
 
+            if(eventArgs.Channel.Type == ChannelType.Private)
+            {
+                if(!eventArgs.Author.IsBot)
+                {
+                    string message = "Epic amogus easter egg!!!11!!!1!\n";
+                    int randInt = Global.Random.Next(0, 7);
+                    
+                    if(randInt == 0)
+                    {
+                        message += "https://c.tenor.com/xvysizpVFvEAAAAM/sus-pizza.gif";
+                    } else if(randInt == 1)
+                    {
+                        message += "https://cdn.discordapp.com/attachments/979467184722022490/987088007481942087/america.webp";
+                    } else if(randInt == 2)
+                    {
+                        message += "https://cdn.discordapp.com/attachments/979467184722022490/987088007712624650/american.png";
+                    } else if(randInt == 3)
+                    {
+                        message += "https://cdn.discordapp.com/attachments/979467184722022490/987088007993622590/gandhi.png";
+                    } else if(randInt == 4)
+                    {
+                        message += "https://cdn.discordapp.com/attachments/979467184722022490/987088008299839548/iphone-sus-pro.jpg";
+                    } else if(randInt == 5)
+                    {
+                        message += "https://cdn.discordapp.com/attachments/979467184722022490/987088348940214282/amogus_maid.png";
+                    } else if(randInt == 6)
+                    {
+                        message += "https://media.discordapp.net/attachments/979467184722022490/987088349422567454/cream.jpg";
+                    } else if(randInt == 7)
+                    {
+                        message += "https://media.discordapp.net/attachments/979467184722022490/987088349720379412/je_sus.jpg";
+                    }
+
+                    await eventArgs.Channel.SendMessageAsync(message);
+                }
+                return;
+            }
+
             if(eventArgs.Author.IsBot && eventArgs.Author.Id == DiscordGlobal.BotID)
             {
                 await DetectStateChange(eventArgs.Channel, eventArgs.Message);
