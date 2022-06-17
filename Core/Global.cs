@@ -32,6 +32,8 @@ namespace Speedberg.Bots.Core
         public static string Website = "https://speedberg.github.io/";
         public static string WebsiteBots = "https://speedberg.github.io/";
         public static string DiscordBotInvite = "https://speedberg.github.io/a/nitro/";
+
+        public static System.Random Random = new System.Random();
     }
 
     public static class DiscordGlobal
