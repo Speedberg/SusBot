@@ -1,12 +1,12 @@
-namespace Speedberg.Bots
-{
-    using Core;
-    using Core.Commands;
-    using System.Threading.Tasks;
-    using DSharpPlus;
-    using DSharpPlus.Entities;
-    using System.Collections.Generic;
+using Speedberg.Bots.Core;
+using Speedberg.Bots.Core.Commands;
+using System.Threading.Tasks;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using System.Collections.Generic;
 
+namespace Speedberg.SusBot
+{
     public class Help : Command
     {
         [Command("help",ClientType.Discord)]
@@ -18,7 +18,7 @@ namespace Speedberg.Bots
         [Parameter("Command","A command to find help for.",true)]
         public async Task DiscordCommand(DiscordMessage message)
         {
-            CommandHelp[] help = DiscordGlobal.Client.HelpCommands;
+            CommandHelp[] help = DiscordGlobal<State,OldState>.Client.HelpCommands;
 
             if(help == null || help.Length == 0)
             {
@@ -58,7 +58,7 @@ namespace Speedberg.Bots
                             string examples = "";
                             for(int e = 0; e < help[i].Examples.Length; e++)
                             {
-                                examples += "`" + DiscordGlobal.Client.Prefix + help[i].Examples[e] + "`\n";
+                                examples += "`" + DiscordGlobal<State,OldState>.Client.Prefix + help[i].Examples[e] + "`\n";
                             }
                             embed.AddField("Examples",examples);
                             

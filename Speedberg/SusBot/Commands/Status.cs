@@ -1,14 +1,14 @@
-namespace Speedberg.Bots
+using Speedberg.Bots.Core;
+using Speedberg.Bots.Core.Commands;
+using System.Threading.Tasks;
+using System.Net;
+using System.IO;
+using Newtonsoft.Json;
+
+using DSharpPlus.Entities;
+
+namespace Speedberg.SusBot.Modules.Utility
 {
-    using Core;
-    using Core.Commands;
-    using System.Threading.Tasks;
-    using System.Net;
-    using System.IO;
-    using Newtonsoft.Json;
-
-    using DSharpPlus.Entities;
-
     public class Status : Command
     {
 
@@ -25,15 +25,16 @@ namespace Speedberg.Bots
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
             embed.WithTitle("Status");
-            embed.WithFooter(Global.WebsiteBots);
+            embed.WithFooter(BotGlobal.WebsiteBots);
 
             if(keywords.Length == 1)
             {
                 embed.WithDescription("Displaying the status for this bot.");
-                embed.AddField("Total time this bot has been in service",Global.UptimeGlobalDiscord,true);
-                embed.AddField("Instance Uptime",Global.UptimeDiscord,true);
-                embed.AddField("Ping", DiscordGlobal.Client.DiscordClient.Ping.ToString(), true);
-                embed.AddField("Instance", DiscordGlobal.BotState.instanceID.ToString());
+                embed.AddField("Total Uptime", DiscordGlobal<State,OldState>.InstanceUptimeToDiscordTimestamp,true);
+                embed.AddField("Instance Uptime",DiscordGlobal<State,OldState>.TotalUptimeToDiscordTimestamp,true);
+                embed.AddField("Ping", DiscordGlobal<State,OldState>.Client.MyClient.Ping.ToString(), true);
+                embed.AddField("Instance", DiscordGlobal<State,OldState>.Client.BotState.instanceID.ToString());
+                embed.AddField("Error Count", Debug.ErrorCount.ToString());
             }
             else
             {
@@ -96,7 +97,13 @@ namespace Speedberg.Bots
                 }
             }
 
-            await message.RespondAsync(embed.Build());
+            try
+            {
+                await message.RespondAsync(embed.Build());
+            } catch(System.Exception e)
+            {
+                await message.RespondAsync("Error: egg");
+            }
         }
 
         private T GetAtlassianStatus<T>(string url) where T : AtlassianStatusResponse.Root

@@ -1,13 +1,12 @@
-namespace Speedberg.Bots
-{
-    using Core;
-    using Core.Commands;
-    using System.Threading.Tasks;
-    using DSharpPlus.Entities;
-    using System.Collections.Generic;
-    using System.Text.RegularExpressions;
-    using System.Threading;
+using Speedberg.Bots.Core;
+using Speedberg.Bots.Core.Commands;
+using System.Threading.Tasks;
+using DSharpPlus.Entities;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
+namespace Speedberg.SusBot.Modules.Fun
+{
     public class Markov : Command
     {
         private static Dictionary<ulong, MarkovGuild> Database = new Dictionary<ulong, MarkovGuild>();
@@ -55,14 +54,14 @@ namespace Speedberg.Bots
         {
             try
             {
-                System.Console.WriteLine($"Generating bigrams for guild {channel.Guild.Name} in channel {channel.Name}.");
+                Debug.Log($"Generating bigrams for guild {channel.Guild.Name} in channel {channel.Name}.");
                 await ConstructBigrams(channel);
-                System.Console.WriteLine($"Bigrams successfully made for guild {channel.Guild.Name} in channel {channel.Name}!");
+                Debug.Log($"Bigrams successfully made for guild {channel.Guild.Name} in channel {channel.Name}!");
                 string result = GenerateSentence((ulong)channel.GuildId, channel.Id, startWord, chainLength);
                 await message.RespondAsync(result);
             }catch (System.Exception e)
             {
-                System.Console.WriteLine($"Bigrams failed for guild {channel.Guild.Name} in channel {channel.Name} - reason: {e}");
+                Debug.Warn($"Bigrams failed for guild {channel.Guild.Name} in channel {channel.Name} - reason: {e}");
                 await message.RespondAsync($"Error: ohno");
             }
         }

@@ -5,6 +5,7 @@ namespace Speedberg.Bots.Core
 {
     public class Command
     {
+        //TODO - List -> Array
         ///<summary>Separates a message into keywords - includes the name of the command.</summary>
         public List<string> GetKeywords(string message)
         {

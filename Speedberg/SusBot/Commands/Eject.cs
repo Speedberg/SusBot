@@ -1,11 +1,11 @@
-namespace Speedberg.Bots
+using Speedberg.Bots.Core;
+using Speedberg.Bots.Core.Commands;
+using System.Threading.Tasks;
+
+using DSharpPlus.Entities;
+
+namespace Speedberg.SusBot.Modules.Fun
 {
-    using Core;
-    using Core.Commands;
-    using System.Threading.Tasks;
-
-    using DSharpPlus.Entities;
-
     public class Eject : Command
     {
         private static int impostors = 2;
@@ -14,6 +14,8 @@ namespace Speedberg.Bots
         private static System.Random Random;
 
         [Command("eject",ClientType.Discord)]
+        [Help("Vote off the impostor.")]
+        [Parameter("Impostor","The sussy bakka to vote off.")]
         public async Task DiscordCommand(DiscordMessage message)
         {
             if(GetKeywords(message.Content).Count < 2)

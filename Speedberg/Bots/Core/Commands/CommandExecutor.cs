@@ -158,12 +158,18 @@ namespace Speedberg.Bots.Core.Commands
                 bool matches = true;
                 for(int p = 0; p < parameterInfos.Length; p++)
                 {
-                    if(parameterInfos[p].ParameterType != parameters[p].GetType()) matches = false;
+                    if(parameterInfos[p].ParameterType != parameters[p].GetDeclaredType()) matches = false;
                 }
 
                 if(!matches) return;
 
-                await members[i].InvokeAsync(command,parameters);
+                try
+                {
+                    await members[i].InvokeAsync(command,parameters);
+                } catch(System.Exception e)
+                {
+                    //smh
+                }
                 return;
             }
         }
@@ -225,6 +231,11 @@ namespace Speedberg.Bots.Core.Commands
             await task.ConfigureAwait(false);
             var resultProperty = task.GetType().GetProperty("Result");
             return resultProperty.GetValue(task);
+        }
+    
+        public static Type GetDeclaredType<T>(this T obj )
+        {
+            return (obj != null) ? obj.GetType() : typeof( T );
         }
     }
 }

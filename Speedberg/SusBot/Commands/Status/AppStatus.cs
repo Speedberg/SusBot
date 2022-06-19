@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Speedberg.Bots
+namespace Speedberg.SusBot.Modules.Utility
 {
     public abstract class AtlassianStatusResponse
     {

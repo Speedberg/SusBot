@@ -18,6 +18,7 @@ namespace Speedberg.Bots.Core
         }
 
         protected ClientType _clientType;
+
         public ClientType ClientType
         {
             get
