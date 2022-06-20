@@ -30,8 +30,8 @@ namespace Speedberg.SusBot.Modules.Utility
             if(keywords.Length == 1)
             {
                 embed.WithDescription("Displaying the status for this bot.");
-                embed.AddField("Total Uptime", DiscordGlobal<State,OldState>.InstanceUptimeToDiscordTimestamp,true);
-                embed.AddField("Instance Uptime",DiscordGlobal<State,OldState>.TotalUptimeToDiscordTimestamp,true);
+                embed.AddField("Total Uptime", DiscordGlobal<State,OldState>.TotalUptimeToDiscordTimestamp,true);
+                embed.AddField("Instance Uptime",DiscordGlobal<State,OldState>.InstanceUptimeToDiscordTimestamp,true);
                 embed.AddField("Ping", DiscordGlobal<State,OldState>.Client.MyClient.Ping.ToString(), true);
                 embed.AddField("Instance", DiscordGlobal<State,OldState>.Client.BotState.instanceID.ToString());
                 embed.AddField("Error Count", Debug.ErrorCount.ToString());
