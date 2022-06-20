@@ -125,8 +125,10 @@ namespace Speedberg.Bots.Core.Discord
                 {
                     args.Handled = true;
 
-                    Debug.Log($"Client created successfully | Version: {MyClient.GatewayVersion} Guilds: {MyClient.Guilds.Count}");
-                    
+                    BotID = MyClient.CurrentUser.Id;
+
+                    Debug.Log($"Client created successfully | ID: {BotID} Version: {MyClient.GatewayVersion} Guilds: {MyClient.Guilds.Count}");
+
                     DiscordGlobal<MyState,MyOldState>.CachedStateGuild = await MyClient.GetGuildAsync(DiscordGlobal<MyState,MyOldState>.StateServerID);
                     if(DiscordGlobal<MyState,MyOldState>.CachedStateGuild == null)
                     {
@@ -265,6 +267,7 @@ namespace Speedberg.Bots.Core.Discord
 
         private async Task DetectStateChange(DiscordChannel channel, DiscordMessage message)
         {
+            Debug.Log("Testing for state change...");
             if(channel.GuildId != DiscordGlobal<MyState,MyOldState>.StateServerID) return;
             if(channel.Id != DiscordGlobal<MyState,MyOldState>.StartupChannelID && channel.Id != DiscordGlobal<MyState,MyOldState>.ShutdownChannelID) return;
 
@@ -317,6 +320,7 @@ namespace Speedberg.Bots.Core.Discord
                     builder.WithFile("State.json", memoryStream);
                     await MyClient.SendMessageAsync(startup ? DiscordGlobal<MyState,MyOldState>.CachedStartupChannel : DiscordGlobal<MyState,MyOldState>.CachedShutdownChannel, builder);
                 }
+                Debug.Log("Bot state saved successfully!");
             } catch(Exception e)
             {
                 Debug.Error($"Failed to save state. Reason: {0}");
@@ -340,6 +344,7 @@ namespace Speedberg.Bots.Core.Discord
                 if(startup)
                 {
                     lastState = await DiscordGlobal<MyState,MyOldState>.CachedStartupChannel.GetMessageAsync((ulong)messageID);
+                    //?????????
                     DiscordGlobal<MyState,MyOldState>.LastStartupMessageID = lastState.Id;
                 } else {
                     lastState = await DiscordGlobal<MyState,MyOldState>.CachedShutdownChannel.GetMessageAsync((ulong)messageID);
@@ -353,12 +358,15 @@ namespace Speedberg.Bots.Core.Discord
 
                 //This will probably break in the future. oh well.
                 uint version = uint.Parse(json.Substring(json.IndexOf("version") + 9, 1));
+                Debug.Log($"Version: {version}");
 
                 //Old state detected
                 if(Global.Version > version)
                 {
+                    Debug.Log("Old state detected!");
                     return (MyState)new MyState().ConvertFromOldState<MyState,MyOldState>(JsonConvert.DeserializeObject<MyOldState>(json));
                 } else {
+                    Debug.Log("New state detected!");
                     return JsonConvert.DeserializeObject<MyState>(json);
                 }
             } catch (System.Exception e)
