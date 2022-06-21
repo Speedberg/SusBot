@@ -25,6 +25,7 @@ namespace Speedberg.Bots.Core
     where T2 : State, new()
     {
         public static Discord.Client<T,T2> Client;
+        public static CancellationTokenSource StateDetectionCts;
 
         public static ulong OwnerID { get; private set; }
         public static ulong BotID { get; private set; }

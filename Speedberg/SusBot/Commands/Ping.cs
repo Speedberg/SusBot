@@ -11,7 +11,7 @@ namespace Speedberg.SusBot
     public class Ping : Command
     {
         [Command("ping",ClientType.Discord)]
-        [Help("Pings an address, or this bot if no parameter is given.","ping")]
+        [Help("Pings an address, or this bot if no parameter is given.","ping","ping [ip address]")]
         [Parameter("ip","The ip address to ping.",true)]
         public async Task DiscordCommand(DiscordMessage message)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -69,6 +70,8 @@ namespace Speedberg.Bots.Core.Discord
         /// </summary>
         public bool IsListening;
 
+        private bool _wasBotActive;
+
         public Client()
         {
             _clientType = ClientType.Discord;
@@ -94,11 +97,16 @@ namespace Speedberg.Bots.Core.Discord
                 this._prefix = prefix;
                 this._commands = commands;
                 this.SlashCommands = new Dictionary<ulong, Command>();
-                
+
+                _wasBotActive = false;
+
                 MyClient.MessageCreated += OnMessageCreated;
                 MyClient.InteractionCreated += OnInteractionCreated;
 
                 await MyClient.ConnectAsync(activity: activity);
+
+                //30 seconds
+                DiscordGlobal<MyState,MyOldState>.StateDetectionCts = new CancellationTokenSource(30000);
 
                 MyClient.Resumed += async (client, args) =>
                 {
@@ -173,6 +181,9 @@ namespace Speedberg.Bots.Core.Discord
 
                     Debug.Log($"Bot UUID: {currentState.uuid} Instance: {currentState.instanceID}");
 
+                    //Wait for shutdown
+                    await WaitForShutdown();
+
                     //Upload new state
                     Debug.Log("Uploading new startup state...");
                     await SaveState(true);
@@ -234,7 +245,29 @@ namespace Speedberg.Bots.Core.Discord
             }
         }
 
-        private async Task CheckForCommand(DiscordMessage message,DiscordGuild guild,DiscordChannel channel)
+        private async Task WaitForShutdown()
+        {
+            while(!DiscordGlobal<MyState,MyOldState>.StateDetectionCts.IsCancellationRequested)
+            {
+                await Task.Delay(500);
+            }
+
+            if(_wasBotActive) return;
+
+            Debug.Warn("No bot was active!");
+
+            try
+            {
+                DiscordChannel shutdownChannel = await MyClient.GetChannelAsync(DiscordGlobal<MyState, MyOldState>.ShutdownChannelID);
+                DiscordMessage lastMessage = await shutdownChannel.GetMessageAsync((ulong)(shutdownChannel.LastMessageId ?? 0));
+                await DetectStateChange(shutdownChannel,lastMessage);
+            } catch(System.Exception e)
+            {
+
+            }
+        }
+
+        private async Task CheckForCommand(DiscordMessage message,DiscordGuild guild, DiscordChannel channel)
         {
             if(!IsListening) return;
 
@@ -267,7 +300,6 @@ namespace Speedberg.Bots.Core.Discord
 
         private async Task DetectStateChange(DiscordChannel channel, DiscordMessage message)
         {
-            Debug.Log("Testing for state change...");
             if(channel.GuildId != DiscordGlobal<MyState,MyOldState>.StateServerID) return;
             if(channel.Id != DiscordGlobal<MyState,MyOldState>.StartupChannelID && channel.Id != DiscordGlobal<MyState,MyOldState>.ShutdownChannelID) return;
 
@@ -298,6 +330,9 @@ namespace Speedberg.Bots.Core.Discord
                 Debug.Log("Loaded old state!");
 
                 if(OnStateChanged != null) await OnStateChanged.Invoke();
+
+                _wasBotActive = true;
+                if(!DiscordGlobal<MyState,MyOldState>.StateDetectionCts.IsCancellationRequested) DiscordGlobal<MyState, MyOldState>.StateDetectionCts.Cancel();
             }
         }
 
@@ -344,7 +379,6 @@ namespace Speedberg.Bots.Core.Discord
                 if(startup)
                 {
                     lastState = await DiscordGlobal<MyState,MyOldState>.CachedStartupChannel.GetMessageAsync((ulong)messageID);
-                    //?????????
                     DiscordGlobal<MyState,MyOldState>.LastStartupMessageID = lastState.Id;
                 } else {
                     lastState = await DiscordGlobal<MyState,MyOldState>.CachedShutdownChannel.GetMessageAsync((ulong)messageID);

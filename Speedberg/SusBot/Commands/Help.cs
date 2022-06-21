@@ -37,7 +37,7 @@ namespace Speedberg.SusBot
                 {
                     
                     embed.WithTitle("Help");
-                    embed.WithDescription("Displaying all commands");
+                    embed.WithDescription("Displaying all commands - type ```!help command``` for more details about a command.");
                     pageNumber = (pageNumber-1) * 10;
                     if(pageNumber >= help.Length) pageNumber = 0;
 
@@ -75,7 +75,7 @@ namespace Speedberg.SusBot
                 }
             } else {
                 embed.WithTitle("Help");
-                embed.WithDescription("Displaying all commands");
+                embed.WithDescription("Displaying all commands - type ```!help command``` for more details about a command.");
 
                 for(int i = 0; i < 10; i++)
                 {
