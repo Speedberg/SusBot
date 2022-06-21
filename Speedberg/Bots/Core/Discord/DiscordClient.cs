@@ -181,12 +181,12 @@ namespace Speedberg.Bots.Core.Discord
 
                     Debug.Log($"Bot UUID: {currentState.uuid} Instance: {currentState.instanceID}");
 
-                    //Wait for shutdown
-                    await WaitForShutdown();
-
                     //Upload new state
                     Debug.Log("Uploading new startup state...");
                     await SaveState(true);
+                    
+                    //Wait for shutdown
+                    await WaitForShutdown();
 
                     //Build slash commands
                     Debug.Log("Building slash commands...");
